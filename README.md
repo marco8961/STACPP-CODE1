@@ -42,11 +42,14 @@ STACPP-CODE/
 
 ## 🚀 Requisitos Previos para el Despliegue
 
-Antes de levantar el entorno en la instancia **AWS EC2**, asegúrate de contar con la siguiente infraestructura ya aprovisionada en tu consola de AWS:
+> 💡 **NOTA:** Se recomienda revisar detalladamente la sección de [📚 Documentación y Manuales a Seguir](#-documentación-y-manuales-a-seguir). En caso de realizar un despliegue en entorno local, asegúrese de modificar las variables y rutas según corresponda.
 
-1. **AWS RDS (PostgreSQL):** Instancia activa con una base de datos vacía llamada `n8n_prod`.
+Antes de levantar el entorno en la instancia **AWS EC2**, asegúrate de contar con la siguiente infraestructura ya aprovisionada en tu consola de AWS.
+
+1. **AWS RDS (PostgreSQL):** Instancia activa con una base de datos.
 2. **AWS EFS (Elastic File System):** Sistema de archivos creado y accesible mediante *Mount Targets* en las mismas subredes que la EC2.
 3. **AWS ALB (Application Load Balancer):** Configurado para redirigir el tráfico HTTP de los dominios hacia el puerto `80` de tu instancia EC2.
+4. **DOMINIO:** Tener un dominio activo, de preferencia de proveedores de confianza.P ero que si tenga compatibilidad para que sea administrado por cloudflared.
 
 ---
 
