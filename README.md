@@ -33,8 +33,7 @@ STACPP-CODE/
 │           └── default.conf   # Enrutador de reversa y balanceo interno
 ├── web/                       # 💻 Frontend del Proyecto
 │   └── webs/stacpp/static/    # Archivos estáticos HTML/CSS servidos por Nginx
-├── .env.example               # Plantilla de variables de entorno globales
-├── .gitignore                 # Exclusiones de Docker local y credenciales
+├── .env
 └── docker-compose.yml         # Orquestador maestro compatible con AWS Multi-AZ
 
 ```
@@ -69,6 +68,58 @@ Crea un archivo `.env` en la raíz basado en las variables del proyecto:
 touch .env
 nano .env
 
+```
+Variables a copiar
+
+```bash
+# ==============================================================================
+# 🔐 CONFIGURACIÓN DE TELEGRAM (01-gestor-mensajes)
+# ==============================================================================
+API_ID=32....
+API_HASH=<api_hash>
+BOT_TOKEN=<bot_token>
+SECRET_TOKEN_N8N=<secret_token_n8n>
+
+# ==============================================================================
+# 💾 CONFIGURACIÓN DE BASE DE DATOS (AWS RDS POSTGRESQL)
+# ==============================================================================
+DB_HOST=<db_host>
+DB_PORT=45...
+DB_NAME=ejemplo1
+DB_USER=ejemplo2
+DB_PASSWORD=<db_password>
+
+# ==============================================================================
+# 🌐 CONFIGURACIÓN DE N8N (ORQUESTADOR)
+# ==============================================================================
+N8N_PROTOCOL=https
+N8N_HOST=n8n.tu.dominio.com
+WEBHOOK_URL=https://n8n.tu_dominio.com/
+NODE_ENV=production
+
+# ==============================================================================
+# 📊 CONFIGURACIÓN DE GRAFANA
+# ==============================================================================
+GRAFANA_PASS=<grafana_password>
+
+# ==============================================================================
+# 🛡️ CONFIGURACIÓN DE PROXIES
+# ==============================================================================
+WEBSHARE_API_URL=https://tu_api
+
+# ==============================================================================
+# 🔐 CONFIGURACIÓN DE HOMARR (DASHBOARD SOC)
+# ==============================================================================
+HOMARR_AUTH_SECRET=
+HOMARR_CRYPT_KEY=
+
+# ==============================================================================
+# 🌐 CONFIGURACIÓN GLOBAL DE DOMINIO
+# ==============================================================================
+DOMAIN_NAME=tu_dominio.com
+
+# 📦 CONFIGURACIÓN DE ALMACENAMIENTO AWS EFS
+EFS_VOLUME_ID=fs......
 ```
 
 ### 3. Ejecutar las Tablas Estructurales en la Base de Datos
