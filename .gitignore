@@ -1,0 +1,17 @@
+# Archivos de entorno (Credenciales privadas de AWS, RDS, etc.)
+.env
+*.env
+
+# Carpetas locales de Docker (Ignorarlas porque usamos AWS EFS en producción)
+infra/n8n_data/
+infra/capturas/
+infra/homarr/
+portainer_data/
+clamav_data/
+grafana_data/
+
+# Archivos sueltos del sistema y Python
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db

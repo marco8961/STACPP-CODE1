@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+
+```
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+    StackPP - Registro Seguro
+</title>
+
+<link
+    rel="stylesheet"
+    href="css/styles.css"
+>
+
+<script
+    src="https://accounts.google.com/gsi/client"
+    async
+    defer
+></script>
+
+<script>
+
+    if (
+        localStorage.getItem('user_email') &&
+        localStorage.getItem('tg_user')
+    ) {
+
+        window.location.replace(
+            'dashboard.html'
+        );
+
+    }
+
+</script>
+```
+
+</head>
+
+<body>
+
+```
+<div class="background-blur"></div>
+
+<div class="container">
+
+    <section
+        class="hero"
+        style="
+            padding-top:60px;
+            padding-bottom:40px;
+        "
+    >
+
+        <div class="hero-tag">
+            Configuración Inicial
+        </div>
+
+        <h1
+            style="
+                font-size:3rem;
+            "
+        >
+            Protege tu Telegram
+        </h1>
+
+        <p>
+            Vincula tu cuenta de Google y Telegram
+            para activar el sistema inteligente de
+            protección de StackPP.
+        </p>
+
+    </section>
+
+    <div
+        class="card"
+        style="
+            max-width:650px;
+            margin:auto;
+        "
+    >
+
+        <!-- GOOGLE -->
+
+        <div
+            id="wrapper-google"
+        >
+
+            <div
+                style="
+                    text-align:center;
+                    margin-bottom:30px;
+                "
+            >
+
+                <h2>
+                    Iniciar Sesión
+                </h2>
+
+                <br>
+
+                <p
+                    style="
+                        color:var(--muted);
+                    "
+                >
+                    Primero autentícate con Google.
+                </p>
+
+            </div>
+
+            <div
+                style="
+                    display:flex;
+                    justify-content:center;
+                "
+            >
+
+                <div
+                    id="g_id_onload"
+                    data-client_id="308198955702-e757g4j48gba5e3ctohijjvdblhd58q2.apps.googleusercontent.com"
+                    data-context="signin"
+                    data-ux_mode="popup"
+                    data-callback="handleCredentialResponse"
+                    data-auto_select="false"
+                >
+                </div>
+
+                <div
+                    class="g_id_signin"
+                    data-type="standard"
+                    data-shape="pill"
+                    data-theme="filled_blue"
+                    data-text="signin_with"
+                    data-size="large"
+                >
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- TELEGRAM -->
+
+        <div
+            id="wrapper-telegram"
+            style="display:none;"
+        >
+
+            <div
+                style="
+                    text-align:center;
+                    margin-bottom:30px;
+                "
+            >
+
+                <div
+                    style="
+                        color:var(--success);
+                        font-weight:700;
+                    "
+                >
+                    ✓ Google Autenticado
+                </div>
+
+                <br>
+
+                <p
+                    id="google-welcome"
+                    style="
+                        color:var(--muted);
+                    "
+                >
+                </p>
+
+            </div>
+
+            <!-- TELEFONO -->
+
+            <div
+                id="step-phone"
+            >
+
+                <label>
+                    Número de Telegram
+                </label>
+
+                <br><br>
+
+                <input
+                    id="phone"
+                    class="input"
+                    type="text"
+                    placeholder="+51987654321"
+                >
+
+                <br><br>
+
+                <button
+                    id="btn-send-code"
+                    class="btn btn-primary"
+                    style="width:100%;"
+                >
+                    Enviar Código
+                </button>
+
+            </div>
+
+            <!-- CODIGO -->
+
+            <div
+                id="step-verify"
+                style="display:none;"
+            >
+
+                <label>
+                    Código de Verificación
+                </label>
+
+                <br><br>
+
+                <input
+                    id="code"
+                    class="input"
+                    type="text"
+                    placeholder="12345"
+                >
+
+                <br><br>
+
+                <div
+                    id="wrapper-pwd"
+                    style="display:none;"
+                >
+
+                    <label>
+                        Contraseña 2FA
+                    </label>
+
+                    <br><br>
+
+                    <input
+                        id="password"
+                        class="input"
+                        type="password"
+                        placeholder="Contraseña Telegram"
+                    >
+
+                    <br><br>
+
+                </div>
+
+                <button
+                    id="btn-verify"
+                    class="btn btn-success"
+                    style="width:100%;"
+                >
+                    Activar Protección
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- MENSAJES -->
+
+        <div
+            id="status-msg"
+            style="
+                display:none;
+                margin-top:20px;
+                padding:14px;
+                border-radius:14px;
+                text-align:center;
+            "
+        ></div>
+
+    </div>
+
+</div>
+
+<script
+    src="js/login.js"
+></script>
+```
+
+</body>
+</html>

@@ -1,0 +1,13 @@
+# Conexión y Base de Datos
+psycopg2-binary
+python-dotenv
+
+# API (Servicio 03)
+fastapi
+uvicorn
+python-multipart
+langdetect
+
+
+# Analizador de Adjuntos (Servicio 02)
+clamd

@@ -1,0 +1,25 @@
+# Conexión y Base de Datos
+psycopg2-binary
+python-dotenv
+
+# API (Servicio 03)
+fastapi
+uvicorn
+python-multipart
+langdetect
+
+
+# Bot de Intercepción (Servicio 01)
+telethon
+aiohttp
+requests
+
+
+##webs
+streamlit
+pandas
+psycopg2-binary
+python-dotenv
+plotly
+PySocks
+asyncpg

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+```
+<title>StackPP - Portal de Seguridad</title>
+
+<link rel="stylesheet" href="css/styles.css">
+
+<script>
+    // Si existe una sesión válida, ir directamente al dashboard
+    if (
+        localStorage.getItem('user_email') &&
+        localStorage.getItem('tg_user')
+    ) {
+        window.location.replace('dashboard.html');
+    }
+</script>
+```
+
+</head>
+
+<body>
+
+```
+<div class="background-blur"></div>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <header class="header">
+
+        <div class="logo">
+            <span class="logo-title">StackPP</span>
+            <span class="logo-badge">v1.0.0</span>
+        </div>
+
+        <a
+            id="header-login-btn"
+            href="login.html"
+            class="btn btn-primary"
+        >
+            Acceder
+        </a>
+
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+
+        <div class="hero-tag">
+            Protección Inteligente para Telegram
+        </div>
+
+        <h1>
+            Seguridad avanzada para tus canales y grupos
+        </h1>
+
+        <p>
+            StackPP analiza enlaces en tiempo real,
+            detecta campañas de phishing dirigidas,
+            inspecciona archivos sospechosos y protege
+            automáticamente tus entornos de Telegram
+            mediante inteligencia artificial.
+        </p>
+
+        <a
+            id="hero-login-btn"
+            href="login.html"
+            class="btn btn-primary"
+        >
+            Comenzar Ahora
+        </a>
+
+    </section>
+
+    <!-- FEATURES -->
+    <section
+        class="card-grid"
+        style="
+            grid-template-columns:
+            repeat(auto-fit,minmax(320px,1fr));
+        "
+    >
+
+        <div class="card">
+
+            <h3>🛡️ IA Anti-Phishing</h3>
+
+            <br>
+
+            <p style="color:var(--muted)">
+                Modelos semánticos avanzados analizan
+                el contexto completo de los mensajes
+                para detectar intentos de fraude,
+                ingeniería social y spear phishing.
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <h3>🔗 Reputación de Enlaces</h3>
+
+            <br>
+
+            <p style="color:var(--muted)">
+                Integración automatizada con motores
+                de reputación y análisis para validar
+                URLs sospechosas antes de que lleguen
+                a los usuarios.
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <h3>📁 Protección de Archivos</h3>
+
+            <br>
+
+            <p style="color:var(--muted)">
+                Inspección de archivos entrantes,
+                bloqueo automático de ejecutables
+                peligrosos y filtrado de contenido
+                potencialmente malicioso.
+            </p>
+
+        </div>
+
+    </section>
+
+    <!-- VIDEO -->
+    <section
+        class="card"
+        style="
+            margin-top:40px;
+            text-align:center;
+        "
+    >
+
+        <h3>
+            Video de Introducción
+        </h3>
+
+        <br>
+
+        <div
+            style="
+                position:relative;
+                padding-bottom:56.25%;
+                height:0;
+                overflow:hidden;
+                border-radius:16px;
+            "
+        >
+
+            <iframe
+                loading="lazy"
+                src="https://www.youtube.com/embed/rJOsjP33nF4"
+                title="Video StackPP"
+                allowfullscreen
+                style="
+                    position:absolute;
+                    top:0;
+                    left:0;
+                    width:100%;
+                    height:100%;
+                    border:none;
+                "
+            ></iframe>
+
+        </div>
+
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+
+        © 2026 StackPP · Plataforma Inteligente
+        de Protección para Telegram
+
+    </footer>
+
+</div>
+```
+
+</body>
+</html>
