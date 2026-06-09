@@ -56,8 +56,8 @@ Antes de levantar el entorno en la instancia **AWS EC2**, asegúrate de contar c
 ### 1. Clonar el repositorio en la instancia EC2
 
 ```bash
-git clone [https://github.com/marco8961/STACPP-CODE.git](https://github.com/marco8961/STACPP-CODE.git)
-cd STACPP-CODE
+git clone https://github.com/marco8961/STACPP-CODE1.git
+cd STACPP-CODE1
 
 ```
 
@@ -66,7 +66,7 @@ cd STACPP-CODE
 Crea un archivo `.env` en la raíz basado en las variables del proyecto:
 
 ```bash
-cp .env.example .env
+touch .env
 nano .env
 
 ```
