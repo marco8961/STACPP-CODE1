@@ -17,7 +17,7 @@ services:
     volumes:
       # Se monta como una plantilla (.template) para inyectar variables de entorno
       - ./infra/nginx/conf/default.conf:/etc/nginx/templates/default.conf.template:ro
-      - ./web/webs/stacpp/static:/usr/share/nginx/html:ro
+      - ./web/stacpp/static:/usr/share/nginx/html:ro
     environment:
       - DOMAIN_NAME=${DOMAIN_NAME} # Pasa la variable del .env a Nginx
     networks:
