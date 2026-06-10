@@ -1,8 +1,9 @@
-
+# 1. Escribir el README completamente corregido y pulido
+cat << 'EOF' > README.md
 # 🐳 STACPP - Production Ready Multi-AZ Architecture (AWS)
 
 ## 📖 Contexto Rápido: ¿Para qué sirve todo esto?
-Este repositorio orquesta una infraestructura completa de ciberseguridad automatizada. Todo este ecosistema sirve para **capturar datos en tiempo real desde Telegram (mensajes y archivos), analizarlos en busca de malware o enlaces de phishing, y procesar su deteccion de manera automatizada**. 
+Este repositorio orquesta una infraestructura completa de ciberseguridad automatizada. Todo este ecosistema sirve para **capturar datos en tiempo real desde Telegram (mensajes y archivos), analizarlos en busca de malware o enlaces de phishing, y procesar su detección de manera automatizada**. 
 
 Al usar Docker y AWS, el proyecto logra que los scripts de Python, la base de datos (RDS), la web de cara al público y las herramientas de automatización (n8n) trabajen de forma unificada, segura, y sin riesgo de perder información si el servidor se llega a reiniciar.
 
@@ -19,6 +20,8 @@ El sistema intercepta flujos de información en tiempo real, procesa y analiza a
 
 <img width="2142" height="1541" alt="Diagram" src="https://github.com/user-attachments/assets/ce83f2b4-0a85-4795-b6e1-82c214e5ce63" />
 
+---
+
 ## 📂 Estructura del Repositorio Clean Code
 
 ```text
@@ -33,48 +36,35 @@ STACPP-CODE/
 │           └── default.conf   # Enrutador de reversa y balanceo interno
 ├── web/                       # 💻 Frontend del Proyecto
 │   └── webs/stacpp/static/    # Archivos estáticos HTML/CSS servidos por Nginx
-├── .env
+├── .env                       # Archivo de configuración local (ignorado en producción)
 └── docker-compose.yml         # Orquestador maestro compatible con AWS Multi-AZ
+🚀 Requisitos Previos para el Despliegue
+💡 NOTA: Se recomienda revisar detalladamente la sección de 📚 Documentación y Manuales a Seguir. En caso de realizar un despliegue en un entorno local, asegúrese de modificar las variables y rutas según corresponda.
 
-```
+Antes de levantar el entorno en la instancia AWS EC2, asegúrese de contar con la siguiente infraestructura ya aprovisionada en tu consola de AWS:
 
----
+AWS RDS (PostgreSQL): Instancia activa con una base de datos operativa.
 
-## 🚀 Requisitos Previos para el Despliegue
+AWS EFS (Elastic File System): Sistema de archivos creado y accesible mediante Mount Targets en las mismas subredes que la EC2.
 
-> 💡 **NOTA:** Se recomienda revisar detalladamente la sección de [📚 Documentación y Manuales a Seguir](#-documentación-y-manuales-a-seguir). En caso de realizar un despliegue en entorno local, asegúrese de modificar las variables y rutas según corresponda.
+AWS ALB (Application Load Balancer): Configurado para redirigir el tráfico HTTP de los dominios hacia el puerto 80 de tu instancia EC2.
 
-Antes de levantar el entorno en la instancia **AWS EC2**, asegúrate de contar con la siguiente infraestructura ya aprovisionada en tu consola de AWS.
+DOMINIO: Tener un dominio activo de un proveedor de confianza, el cual debe contar con compatibilidad para ser administrado a través de Cloudflare.
 
-1. **AWS RDS (PostgreSQL):** Instancia activa con una base de datos.
-2. **AWS EFS (Elastic File System):** Sistema de archivos creado y accesible mediante *Mount Targets* en las mismas subredes que la EC2.
-3. **AWS ALB (Application Load Balancer):** Configurado para redirigir el tráfico HTTP de los dominios hacia el puerto `80` de tu instancia EC2.
-4. **DOMINIO:** Tener un dominio activo, de preferencia de proveedores de confianza.P ero que si tenga compatibilidad para que sea administrado por cloudflared.
-
----
-
-## 🛠️ Guía de Despliegue Rápido (Paso a Paso)
-
-### 1. Clonar el repositorio en la instancia EC2
-
-```bash
-git clone https://github.com/marco8961/STACPP-CODE1.git
+🛠️ Guía de Despliegue Rápido (Paso a Paso)
+1. Clonar el repositorio en la instancia EC2
+Bash
+git clone [https://github.com/marco8961/STACPP-CODE1.git](https://github.com/marco8961/STACPP-CODE1.git)
 cd STACPP-CODE1
+2. Configurar Variables de Entorno
+Crea un archivo .env en la raíz basado en las variables del proyecto:
 
-```
-
-### 2. Configurar Variables de Entorno
-
-Crea un archivo `.env` en la raíz basado en las variables del proyecto:
-
-```bash
+Bash
 touch .env
 nano .env
+Variables a copiar y rellenar dentro del archivo:
 
-```
-Variables a copiar
-
-```bash
+Ini, TOML
 # ==============================================================================
 # 🔐 CONFIGURACIÓN DE TELEGRAM (01-gestor-mensajes)
 # ==============================================================================
@@ -97,7 +87,7 @@ DB_PASSWORD=<db_password>
 # ==============================================================================
 N8N_PROTOCOL=https
 N8N_HOST=n8n.tu.dominio.com
-WEBHOOK_URL=https://n8n.tu_dominio.com/
+WEBHOOK_URL=[https://n8n.tu_dominio](https://n8n.tu_dominio).com/
 NODE_ENV=production
 
 # ==============================================================================
@@ -121,43 +111,34 @@ HOMARR_CRYPT_KEY=
 # ==============================================================================
 DOMAIN_NAME=tu_dominio.com
 
+# ==============================================================================
 # 📦 CONFIGURACIÓN DE ALMACENAMIENTO AWS EFS
+# ==============================================================================
 EFS_VOLUME_ID=fs......
-```
+3. Ejecutar las Tablas Estructurales en la Base de Datos
+Antes de encender los contenedores, ejecute el archivo SQL de su dump estructural utilizando su cliente de confianza (DBeaver o pgAdmin) conectado al endpoint de AWS RDS.
 
-### 3. Ejecutar las Tablas Estructurales en la Base de Datos
-
-Antes de encender los contenedores, ejecuta el archivo SQL de mi dump estructural utilizando tu cliente de confianza (**DBeaver** o **pgAdmin**) conectado al endpoint de **AWS RDS**.
-
-### 4. Encender la Arquitectura con Docker Compose
-
-```bash
+4. Encender la Arquitectura con Docker Compose
+Bash
 docker compose up -d
+💾 Gestión de Almacenamiento Compartido (AWS EFS)
+El volumen de datos de n8n y la carpeta compartida con el microservicio 01-gestor-mensajes están mapeados directamente a la raíz de tu AWS EFS usando el controlador nativo NFSv4 de Docker. Esto garantiza que si la instancia EC2 se reinicia o escala, los archivos .png y los flujos nunca se perderán.
 
-```
-
----
-
-## 💾 Gestión de Almacenamiento Compartido (AWS EFS)
-
-El volumen de datos de `n8n` y la carpeta compartida con el microservicio `01-gestor-mensajes` están mapeados directamente a la raíz de tu **AWS EFS** usando el controlador nativo NFSv4 de Docker. Esto garantiza que si la instancia EC2 se reinicia o escala, los archivos `.png` y flujos **nunca se perderán**.
-
----
-
-## 📚 Documentación y Manuales a Seguir
-
+📚 Documentación y Manuales a Seguir
 Para operar, mantener o expandir el sistema correctamente, se deben seguir los siguientes manuales de procedimientos internos:
 
-* **📖 Manual de Credenciales y API Keys:** Documento guía para la obtención de tokens de Telegram (`API_ID`, `API_HASH`), configuración de accesos de AWS y rotación de llaves del panel de Homarr.
-* **📖 Guía de Mantenimiento de Base de Datos (Postgres):** Pasos para ejecutar respaldos preventivos desde DBeaver, monitoreo de conexiones activas en AWS RDS y validación de tipos de datos masivos `INT8`.
-* **📖 Manual de Flujos en N8N:** Estructura de los Webhooks activos, reglas para la generación de alertas en Discord/Slack y ruta del volumen compartido para la lectura de imágenes `.png`.
-* **📖 Procedimiento de Escalabilidad de Microservicios:** Instrucciones para modificar las imágenes de Docker de los analizadores de Phishing (Transformers) y recarga limpia de Nginx mediante `docker compose exec nginx nginx -s reload`.
+📖 Manual de Credenciales y API Keys: Documento guía para la obtención de tokens de Telegram (API_ID, API_HASH), configuración de accesos de AWS y rotación de llaves del panel de Homarr.
 
----
+📖 Guía de Mantenimiento de Base de Datos (Postgres): Pasos para ejecutar respaldos preventivos desde DBeaver, monitoreo de conexiones activas en AWS RDS y validación de tipos de datos masivos INT8.
 
-## 👥 Creadores y Desarrolladores
+📖 Manual de Flujos en N8N: Estructura de los Webhooks activos, reglas para la generación de alertas en Discord/Slack y ruta del volumen compartido para la lectura de imágenes .png.
 
+📖 Procedimiento de Escalabilidad de Microservicios: Instrucciones para modificar las imágenes de Docker de los analizadores de Phishing (Transformers) y recarga limpia de Nginx mediante docker compose exec nginx nginx -s reload.
+
+👥 Creadores y Desarrolladores
 Este proyecto ha sido diseñado y desarrollado por:
 
-* **Marco Pillaca** — *Core Architecture, DevOps & Backend Infrastructure* 
-* **Paolo Pineda** — *Core Developer / Integrations*
+Marco Pillaca — Core Architecture, DevOps & Backend Infrastructure
+
+Paolo Pineda — Core Developer / Integrations
+EOF
