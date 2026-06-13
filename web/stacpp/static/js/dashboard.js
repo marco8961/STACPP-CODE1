@@ -76,7 +76,7 @@ async function consultarMetricas() {
 
         const response =
             await fetch(
-                `${window.location.origin}/api/metricas?email=${email}`
+                `${window.location.origin}/api/metricas`
             );
 
         const data =

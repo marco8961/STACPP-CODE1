@@ -98,3 +98,13 @@ CREATE TABLE public.analisis_urlscan (
     tecnologias VARCHAR(255) NULL,
     CONSTRAINT archivos_mensaje_id_fkey FOREIGN KEY (mensaje_id) REFERENCES public.mensajes(mensaje_id) ON DELETE CASCADE
 );
+
+-- ----------------------------------------------------------------------------
+-- 7. ADMINISTRADORES
+-- ----------------------------------------------------------------------------
+CREATE TABLE public.administradores (
+    email VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(64) NOT NULL, -- Almacena el hash SHA-256 de la contraseña
+    creado TIMESTAMPTZ DEFAULT NOW() NULL,
+    CONSTRAINT administradores_pkey PRIMARY KEY (email)
+);

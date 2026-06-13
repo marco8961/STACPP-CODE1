@@ -18,12 +18,65 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
+import hmac
+import hashlib
+import json
+import base64
+import time
 
 # --- CONFIGURACIÓN DE VARIABLES DE ENTORNO ---
 load_dotenv()
 API_ID = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")
 SECRET_TOKEN = os.getenv("SECRET_TOKEN_N8N")
+
+# --- SISTEMA DE SESIONES PROPIO Y SEGURO ---
+SECRET_KEY = os.getenv("SECRET_TOKEN_N8N", "default_secret_key_stacpp_12345").encode()
+
+def crear_token(email: str, role: str) -> str:
+    payload = {
+        "email": email,
+        "role": role,
+        "exp": time.time() + 86400 * 7  # Expiración en 7 días
+    }
+    payload_str = json.dumps(payload)
+    payload_b64 = base64.urlsafe_b64encode(payload_str.encode()).decode()
+    signature = hmac.new(SECRET_KEY, payload_b64.encode(), hashlib.sha256).hexdigest()
+    return f"{payload_b64}.{signature}"
+
+def verificar_token(token: str) -> dict:
+    if not token or "." not in token:
+        return None
+    try:
+        payload_b64, signature = token.split(".", 1)
+        expected_sig = hmac.new(SECRET_KEY, payload_b64.encode(), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(signature, expected_sig):
+            return None
+        payload_str = base64.urlsafe_b64decode(payload_b64.encode()).decode()
+        payload = json.loads(payload_str)
+        if payload.get("exp", 0) < time.time():
+            return None
+        return payload
+    except Exception:
+        return None
+
+def obtener_usuario_sesion(request: Request) -> dict:
+    token = request.cookies.get("session_token")
+    if not token:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ", 1)[1]
+    if not token:
+        return None
+    return verificar_token(token)
+
+async def es_administrador(email: str) -> bool:
+    if not email:
+        return False
+    async with db_pool.acquire() as conn:
+        row = await conn.fetchrow("SELECT 1 FROM administradores WHERE email = $1", email)
+        return row is not None
+
 
 # Mapeo dinámico y estricto desde tu archivo .env (AWS RDS)
 DB_HOST = os.getenv("DB_HOST")
@@ -92,6 +145,33 @@ async def lifespan(app: FastAPI):
             ALTER TABLE public.usuarios_telegram 
             ADD COLUMN IF NOT EXISTS email VARCHAR(255);
         """)
+
+        # Asegurar la creación de la tabla administradores
+        await conn.execute('''
+            CREATE TABLE IF NOT EXISTS public.administradores (
+                email VARCHAR(255) NOT NULL,
+                password_hash VARCHAR(64) NOT NULL,
+                creado TIMESTAMPTZ DEFAULT NOW() NULL,
+                CONSTRAINT administradores_pkey PRIMARY KEY (email)
+            );
+        ''')
+        
+        # Parchear la tabla si ya existía sin la columna password_hash
+        await conn.execute('''
+            ALTER TABLE public.administradores ADD COLUMN IF NOT EXISTS password_hash VARCHAR(64);
+        ''')
+
+        # Sembrar admin maestro si no hay registros
+        admins_count = await conn.fetchval("SELECT COUNT(*) FROM public.administradores;")
+        if admins_count == 0:
+            default_email = "admin@stacpp.com"
+            default_pass = "admin12345"
+            p_hash = hashlib.sha256(default_pass.encode()).hexdigest()
+            await conn.execute('''
+                INSERT INTO public.administradores (email, password_hash)
+                VALUES ($1, $2);
+            ''', default_email, p_hash)
+            print(f"🔑 [Sembrado] Usuario Maestro Administrador creado: {default_email} con clave: {default_pass}")
 
     # 💡 Al salir del bloque "async with", la conexión se devuelve al pool limpiamente.
     print("💾 [Redcoon] Conexión exitosa a AWS RDS PostgreSQL y tablas verificadas.")
@@ -342,6 +422,17 @@ async def api_verificar(request: Request):
                 session_string
             )
 
+            # Asegurar que exista una fila en la tabla clientes para mapear las métricas
+            if email:
+                await conn.execute('''
+                    INSERT INTO clientes (nombre, contacto)
+                    VALUES ($1, $2)
+                    ON CONFLICT (contacto) DO NOTHING;
+                ''',
+                    me.first_name,
+                    email
+                )
+
         client.add_event_handler(filtro_central, events.NewMessage)
         clientes_activos[me.id] = client
         logueos_pendientes.pop(phone, None)
@@ -400,6 +491,278 @@ async def check_user(request: Request):
     return {
         "telegram_linked": False
     }
+
+# ==============================================================================
+# 🔐 NUEVOS ENDPOINTS DE AUTENTICACIÓN Y ADMINISTRACIÓN
+# ==============================================================================
+
+async def verificar_google_token(id_token: str) -> dict:
+    url = f"https://oauth2.googleapis.com/tokeninfo?id_token={id_token}"
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.get(url, timeout=5) as resp:
+                if resp.status != 200:
+                    return None
+                data = await resp.json()
+                if "email" in data:
+                    return data
+        except Exception:
+            return None
+    return None
+
+@app.post("/auth/google_login")
+async def api_google_login(request: Request):
+    data = await request.json()
+    id_token = data.get("credential")
+    if not id_token:
+        raise HTTPException(status_code=400, detail="Token no proporcionado")
+    
+    google_data = await verificar_google_token(id_token)
+    if not google_data:
+        raise HTTPException(status_code=401, detail="Token de Google inválido")
+    
+    email = google_data.get("email")
+    name = google_data.get("name", "")
+    
+    role = "user"
+    if await es_administrador(email):
+        role = "admin"
+        
+    token = crear_token(email, role)
+    
+    from fastapi.responses import JSONResponse
+    response = JSONResponse(content={
+        "status": "success",
+        "email": email,
+        "name": name,
+        "role": role,
+        "token": token
+    })
+    
+    response.set_cookie(
+        key="session_token",
+        value=token,
+        httponly=True,
+        max_age=86400 * 7,
+        samesite="lax"
+    )
+    return response
+
+@app.post("/auth/admin_login")
+async def api_admin_login(request: Request):
+    data = await request.json()
+    email = data.get("email")
+    password = data.get("password")
+    
+    if not email or not password:
+        raise HTTPException(status_code=400, detail="Email y contraseña requeridos")
+        
+    p_hash = hashlib.sha256(password.encode()).hexdigest()
+    
+    async with db_pool.acquire() as conn:
+        row = await conn.fetchrow(
+            "SELECT email FROM administradores WHERE email = $1 AND password_hash = $2",
+            email, p_hash
+        )
+        
+    if not row:
+        raise HTTPException(status_code=401, detail="Credenciales de administrador incorrectas")
+        
+    token = crear_token(email, "admin")
+    
+    from fastapi.responses import JSONResponse
+    response = JSONResponse(content={
+        "status": "success",
+        "email": email,
+        "role": "admin",
+        "token": token
+    })
+    
+    response.set_cookie(
+        key="session_token",
+        value=token,
+        httponly=True,
+        max_age=86400 * 7,
+        samesite="lax"
+    )
+    return response
+
+@app.get("/api/metricas")
+async def api_metricas(request: Request):
+    session = obtener_usuario_sesion(request)
+    if not session:
+        raise HTTPException(status_code=401, detail="Sesión no iniciada")
+    
+    email = session["email"]
+    
+    async with db_pool.acquire() as conn:
+        client_row = await conn.fetchrow(
+            "SELECT cliente_id FROM clientes WHERE contacto = $1", email
+        )
+        if not client_row:
+            return {
+                "status": "ok",
+                "links_procesados": 0,
+                "archivos_procesados": 0
+            }
+        
+        client_id = client_row["cliente_id"]
+        
+        links_row = await conn.fetchrow(
+            """
+            SELECT COUNT(DISTINCT m.mensaje_id) as total
+            FROM mensajes m
+            JOIN analisis a ON m.mensaje_id = a.mensaje_id
+            WHERE m.cliente_id = $1
+            """,
+            client_id
+        )
+        
+        files_row = await conn.fetchrow(
+            """
+            SELECT COUNT(DISTINCT m.mensaje_id) as total
+            FROM mensajes m
+            JOIN analisis_archivos aa ON m.mensaje_id = aa.mensaje_id
+            WHERE m.cliente_id = $1
+            """,
+            client_id
+        )
+        
+        return {
+            "status": "ok",
+            "links_procesados": links_row["total"] if links_row else 0,
+            "archivos_procesados": files_row["total"] if files_row else 0
+        }
+
+@app.get("/api/admin/metricas_globales")
+async def api_admin_metricas_globales(request: Request):
+    session = obtener_usuario_sesion(request)
+    if not session or session.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Acceso denegado")
+    
+    async with db_pool.acquire() as conn:
+        users_count = await conn.fetchval("SELECT COUNT(*) FROM usuarios_telegram")
+        links_count = await conn.fetchval("SELECT COUNT(*) FROM analisis")
+        malware_count = await conn.fetchval(
+            "SELECT COUNT(*) FROM analisis_archivos WHERE status = 'PELIGROSO'"
+        )
+        
+        return {
+            "status": "ok",
+            "total_usuarios": users_count,
+            "total_links": links_count,
+            "total_malware": malware_count
+        }
+
+@app.get("/api/admin/usuarios")
+async def api_admin_usuarios(request: Request):
+    session = obtener_usuario_sesion(request)
+    if not session or session.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Acceso denegado")
+    
+    async with db_pool.acquire() as conn:
+        rows = await conn.fetch(
+            """
+            SELECT telegram_id, telefono, nombre, email, fecha_registro
+            FROM usuarios_telegram
+            ORDER BY fecha_registro DESC
+            """
+        )
+        
+        usuarios = []
+        for r in rows:
+            tg_id = r["telegram_id"]
+            status = "Activo" if tg_id in clientes_activos else "Inactivo"
+            usuarios.append({
+                "telegram_id": tg_id,
+                "telefono": r["telefono"],
+                "nombre": r["nombre"],
+                "email": r["email"] or "No asociado",
+                "fecha_registro": r["fecha_registro"].isoformat() if r["fecha_registro"] else "",
+                "status": status
+            })
+            
+        return {
+            "status": "ok",
+            "usuarios": usuarios
+        }
+
+@app.get("/api/admin/alertas")
+async def api_admin_alertas(request: Request):
+    session = obtener_usuario_sesion(request)
+    if not session or session.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Acceso denegado")
+    
+    async with db_pool.acquire() as conn:
+        files_alerts = await conn.fetch(
+            """
+            SELECT aa.mensaje_id, aa.filename as details, aa.status as veredicto, m.fecha, m.texto
+            FROM analisis_archivos aa
+            JOIN mensajes m ON aa.mensaje_id = m.mensaje_id
+            WHERE aa.status = 'PELIGROSO'
+            ORDER BY m.fecha DESC LIMIT 50
+            """
+        )
+        
+        links_alerts = await conn.fetch(
+            """
+            SELECT a.mensaje_id, a.veredicto_final as veredicto, m.fecha, m.texto
+            FROM analisis a
+            JOIN mensajes m ON a.mensaje_id = m.mensaje_id
+            WHERE a.veredicto_final = 'PELIGROSO' OR a.riesgo >= 0.8
+            ORDER BY m.fecha DESC LIMIT 50
+            """
+        )
+        
+        alertas = []
+        for r in files_alerts:
+            alertas.append({
+                "tipo": "Malware",
+                "mensaje_id": r["mensaje_id"],
+                "detalle": f"Archivo: {r['details']}",
+                "fecha": r["fecha"].isoformat() if r["fecha"] else "",
+                "texto": r["texto"]
+            })
+        for r in links_alerts:
+            alertas.append({
+                "tipo": "Phishing",
+                "mensaje_id": r["mensaje_id"],
+                "detalle": "Enlace malicioso detectado",
+                "fecha": r["fecha"].isoformat() if r["fecha"] else "",
+                "texto": r["texto"]
+            })
+            
+        alertas.sort(key=lambda x: x["fecha"], reverse=True)
+        
+        return {
+            "status": "ok",
+            "alertas": alertas[:50]
+        }
+
+@app.post("/api/admin/crear_administrador")
+async def api_admin_crear_administrador(request: Request):
+    session = obtener_usuario_sesion(request)
+    if not session or session.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Acceso denegado")
+    
+    data = await request.json()
+    new_email = data.get("email")
+    new_password = data.get("password")
+    if not new_email or not new_password:
+        raise HTTPException(status_code=400, detail="Email y contraseña requeridos")
+    
+    p_hash = hashlib.sha256(new_password.encode()).hexdigest()
+    async with db_pool.acquire() as conn:
+        await conn.execute(
+            """
+            INSERT INTO administradores (email, password_hash)
+            VALUES ($1, $2)
+            ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash
+            """,
+            new_email, p_hash
+        )
+        return {"status": "ok", "msg": f"Administrador {new_email} añadido correctamente"}
+
 
 # ==============================================================================
 # 🚀 ORQUESTACIÓN DE ARRANQUE (BOOTSTRAPPING)

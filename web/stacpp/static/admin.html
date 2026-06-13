@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StackPP - Portal de Administración</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script>
+        // Si no es admin, redirigir al login inmediatamente
+        if (localStorage.getItem('user_role') !== 'admin') {
+            window.location.replace('login.html');
+        }
+    </script>
+</head>
+<body>
+
+<div class="background-blur"></div>
+
+<div class="container" style="max-width: 1400px; padding-top: 20px;">
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="logo">
+            <span class="logo-title">StackPP</span>
+            <span class="logo-badge">Panel Admin</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <span id="admin-email-display" style="color: var(--muted); font-size: 0.9rem;">admin@stacpp.com</span>
+            <button id="btn-logout" class="btn btn-secondary" style="padding: 10px 18px;">
+                Cerrar Sesión
+            </button>
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero" style="padding-top: 50px; padding-bottom: 30px; text-align: left;">
+        <div class="hero-tag">Centro de Operaciones de Seguridad (SOC)</div>
+        <h1 style="font-size: 2.8rem; margin-top: 15px; margin-left: 0;">Panel de Control SOC</h1>
+        <p style="margin: 15px 0 0 0; max-width: 700px;">
+            Monitoreo en tiempo real de los escudos perimetrales de Telegram, auditoría de amenazas y gestión de usuarios.
+        </p>
+    </section>
+
+    <!-- MÉTRICAS GLOBALES -->
+    <section class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-bottom: 40px;">
+        
+        <div class="card">
+            <h3>👥 Total Usuarios</h3>
+            <br>
+            <div id="stat-total-users" style="font-size: 3.5rem; font-weight: 800; color: var(--primary); text-shadow: 0 0 20px rgba(99, 102, 241, 0.25);">0</div>
+            <p style="color: var(--muted); font-size: 0.88rem;">Cuentas de Telegram vinculadas</p>
+        </div>
+
+        <div class="card">
+            <h3>🔗 Enlaces Auditados</h3>
+            <br>
+            <div id="stat-total-links" style="font-size: 3.5rem; font-weight: 800; color: var(--success); text-shadow: 0 0 20px rgba(16, 185, 129, 0.25);">0</div>
+            <p style="color: var(--muted); font-size: 0.88rem;">URLs procesadas por IA</p>
+        </div>
+
+        <div class="card">
+            <h3>🚨 Amenazas Detectadas</h3>
+            <br>
+            <div id="stat-total-threats" style="font-size: 3.5rem; font-weight: 800; color: var(--danger); text-shadow: 0 0 20px rgba(244, 63, 94, 0.25);">0</div>
+            <p style="color: var(--muted); font-size: 0.88rem;">Malware y phishing mitigados</p>
+        </div>
+
+    </section>
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-bottom: 40px;" class="admin-main-grid">
+        
+        <!-- SECCIÓN IZQUIERDA: TABLA USUARIOS -->
+        <div class="card" style="overflow-x: auto;">
+            <h3 style="margin-bottom: 20px;">🛡️ Usuarios y Escudos Activos</h3>
+            <table id="users-table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Telegram ID</th>
+                        <th>Teléfono</th>
+                        <th>Email de Registro</th>
+                        <th>Estado Escudo</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table-body">
+                    <tr>
+                        <td colspan="5" style="padding: 20px; text-align: center; color: var(--muted);">Cargando usuarios...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SECCIÓN DERECHA: REGISTRO ADMINISTRADORES -->
+        <div class="card" style="height: fit-content;">
+            <h3 style="margin-bottom: 15px;">🔑 Registrar Nuevo Admin</h3>
+            <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 20px;">
+                Crea una nueva credencial para habilitar el acceso al panel administrativo de otro operador.
+            </p>
+            
+            <form id="add-admin-form" onsubmit="return false;" style="display: flex; flex-direction: column; gap: 15px;">
+                <div>
+                    <label>Correo Electrónico</label>
+                    <input id="new-admin-email" class="input" type="email" placeholder="operador@stacpp.com" required autocomplete="username">
+                </div>
+                <div>
+                    <label>Contraseña Acceso</label>
+                    <input id="new-admin-password" class="input" type="password" placeholder="Contraseña del Admin" required autocomplete="new-password">
+                </div>
+                <button type="submit" id="btn-add-admin" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 12px;">
+                    Otorgar Privilegios
+                </button>
+            </form>
+            
+            <div id="admin-status-msg" style="display: none; margin-top: 15px; padding: 12px; border-radius: 10px; font-size: 0.9rem; text-align: center; font-weight: 500;"></div>
+        </div>
+
+    </div>
+
+    <!-- SECCIÓN INFERIOR: LOGS DE AMENAZAS -->
+    <div class="card" style="overflow-x: auto;">
+        <h3 style="margin-bottom: 25px;">🚨 Registro Reciente de Amenazas</h3>
+        <table id="threats-table">
+            <thead>
+                <tr>
+                    <th style="width: 100px;">Tipo</th>
+                    <th style="width: 130px;">Fecha</th>
+                    <th style="width: 250px;">Detalle de Análisis</th>
+                    <th>Mensaje Interceptado</th>
+                </tr>
+            </thead>
+            <tbody id="threats-table-body">
+                <tr>
+                    <td colspan="4" style="padding: 20px; text-align: center; color: var(--muted);">Cargando historial de amenazas...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        StackPP Security Gateway &copy; 2026 Panel Administrativo SOC · Ciberseguridad Activa
+    </footer>
+
+</div>
+
+<script src="js/admin.js"></script>
+
+<style>
+    /* Estilos responsivos de cuadrícula del admin */
+    @media (max-width: 992px) {
+        .admin-main-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>
+
+</body>
+</html>

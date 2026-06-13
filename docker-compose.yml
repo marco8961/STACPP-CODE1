@@ -17,14 +17,12 @@ services:
     volumes:
       # Se monta como una plantilla (.template) para inyectar variables de entorno
       - ./infra/nginx/conf/default.conf:/etc/nginx/templates/default.conf.template:ro
-      - ./web/webs/stacpp/static:/usr/share/nginx/html:ro
+      - ./web/stacpp/static:/usr/share/nginx/html:ro
     environment:
       - DOMAIN_NAME=${DOMAIN_NAME} # Pasa la variable del .env a Nginx
     networks:
-      - frontend_net
-      - backend_net
       - admin_net
-
+      - backend_net
   # ============================================================================
   # 🌐 N8N (CONECTADO A TU RDS POSTGRESQL DE AWS - CERO SQLITE LOCAL)
   # ============================================================================
@@ -41,7 +39,7 @@ services:
       - N8N_PROTOCOL=https
       - WEBHOOK_URL=https://n8n.${DOMAIN_NAME}/
       - N8N_EDITOR_BASE_URL=https://n8n.${DOMAIN_NAME}/
-      
+
       # 🗄️ CONFIGURACIÓN DE BASE DE DATOS PARA AWS RDS (POSTGRESQL)
       - N8N_DATABASE_TYPE=postgresdb
       - N8N_DATABASE_HOST=${DB_HOST}         # Tu endpoint de AWS RDS
@@ -49,18 +47,17 @@ services:
       - N8N_DATABASE_USER=${DB_USER}         # Tu usuario maestro de RDS
       - N8N_DATABASE_PASSWORD=${DB_PASSWORD} # Tu contraseña de RDS
       - N8N_DATABASE_NAME=n8n_prod           # Database creada previamente en RDS
-      
+
       - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
     volumes:
       # 📦 CORREGIDO: Enlazado directo al volumen nativo EFS definido abajo
       - efs-apps-docker-stacpp:/home/node/.n8n
     networks:
       - backend_net
-
   # ============================================================================
   # 🧠 MICROSERVICIOS BACKEND NUMERADOS (DENTRO DE LA CARPETA /apps)
   # ============================================================================
-  
+
   # 01. Gestor de Mensajes (Usa Telethon)
   01-gestor-mensajes:
     image: python:3.10-slim
@@ -108,9 +105,16 @@ services:
       - ./apps/03-detector-phishing:/app
     command: sh -c "pip install --no-cache-dir -r requirements3.txt && python api/main.py"
     expose:
-      - "8002" # Sincronizado con el puerto de tu Nginx default.conf
+      - "8002"
     environment:
       - PYTHONPATH=/app
+      # 🗄️ FORZAMOS A DOCKER A ENLAZAR LAS VARIABLES DEL RECURSO .ENV:
+      - DB_HOST=host.docker.internal
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # 👈 ¡ESTO ABRE EL CAMINO HACIA EL RDS!
     networks:
       - backend_net
 
@@ -173,24 +177,12 @@ services:
     expose:
       - "7575"
     volumes:
-      - ./infra/homarr:/appdata 
+      - ./infra/homarr:/appdata
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - AUTH_SECRET=${HOMARR_AUTH_SECRET}         # Desde el .env
-      - SECRET_ENCRYPTION_KEY=${HOMARR_CRYPT_KEY} # Desde el .env
-      - NEXTAUTH_URL=https://homarr.${DOMAIN_NAME}
+      - SECRET_ENCRYPTION_KEY=abb2b13923765920b9a486e21f14e3da12007e28ad9937c42dc0c24bb7df74c3
     networks:
       - admin_net
-
-# ============================================================================
-# 🌐 GESTIÓN DE REDES (Aislamiento de Entornos)
-# ============================================================================
-networks:
-  frontend_net:
-    driver: bridge
-  backend_net:
-    driver: bridge
-  admin_net:
-    driver: bridge
 
 # ============================================================================
 # 💾 VOLÚMENES PERSISTENTES
@@ -208,3 +200,13 @@ volumes:
       type: nfs
       o: "addr=${EFS_VOLUME_ID}.efs.us-east-1.amazonaws.com,rw,nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport"
       device: ":"
+
+# BLOQUE 2: Las definiciones globales (¿Cómo se construyen las calles/redes?)
+# Va al último y pegado por completo a la izquierda (sin espacios)
+networks:
+  frontend_net:
+    driver: bridge
+  backend_net:
+    driver: bridge
+  admin_net:
+    driver: bridge

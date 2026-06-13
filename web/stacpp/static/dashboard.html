@@ -1,407 +1,108 @@
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
-
-```
-<meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<title>
-    StackPP - Dashboard
-</title>
-
-<link
-    rel="stylesheet"
-    href="css/styles.css"
->
-```
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StackPP - Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
-
 <body>
 
-```
 <div class="background-blur"></div>
 
-<div class="container">
+<div class="container" style="max-width: 1000px; padding-top: 20px;">
 
     <!-- HEADER -->
-
     <header class="header">
-
         <div class="logo">
-
-            <span class="logo-title">
-                StackPP
-            </span>
-
-            <span class="logo-badge">
-                Dashboard
-            </span>
-
+            <span class="logo-title">StackPP</span>
+            <span class="logo-badge">Dashboard</span>
         </div>
-
-        <button
-            onclick="logout()"
-            class="btn btn-primary"
-        >
+        <button id="btn-logout" class="btn btn-secondary" style="padding: 10px 18px;">
             Cerrar Sesión
         </button>
-
     </header>
 
-    <!-- HERO -->
-
-    <section
-        class="hero"
-        style="
-            padding-top:70px;
-            padding-bottom:50px;
-        "
-    >
-
-        <div class="hero-tag">
-            Sistema Activo
-        </div>
-
-        <h1
-            id="welcome-title"
-            style="
-                font-size:3rem;
-                margin-top:20px;
-            "
-        >
-            Bienvenido
-        </h1>
-
-        <p>
-
-            Protección inteligente habilitada
-            para tu cuenta de Telegram.
-
+    <!-- HERO / WELCOME -->
+    <section class="hero" style="padding-top: 50px; padding-bottom: 30px; text-align: left;">
+        <div class="hero-tag">Panel de Protección</div>
+        <h1 id="welcome-title" style="font-size: 2.8rem; margin-top: 15px; margin-left: 0;">Bienvenido</h1>
+        <p style="margin: 15px 0 0 0; max-width: 600px;">
+            Tu cuenta y canales vinculados están siendo auditados en tiempo real contra links maliciosos y virus.
         </p>
-
     </section>
 
-    <!-- ESTADO -->
+    <!-- ESTADO DEL ESCUDO -->
+    <section class="card" style="margin-bottom: 30px; text-align: center; padding: 40px 20px;">
+        
+        <div class="shield-container">
+            <div class="shield-glow"></div>
+            <div class="shield-icon">🛡️</div>
+        </div>
 
-    <section
-        class="card"
-        style="
-            margin-bottom:30px;
-            text-align:center;
-        "
-    >
-
-        <div
-            style="
-                display:inline-flex;
-                align-items:center;
-                gap:10px;
-
-                padding:10px 18px;
-
-                border-radius:999px;
-
-                background:
-                rgba(16,185,129,.12);
-
-                border:
-                1px solid
-                rgba(16,185,129,.25);
-            "
-        >
-
-            <span
-                style="
-                    width:10px;
-                    height:10px;
-                    border-radius:50%;
-                    background:#10b981;
-                "
-            ></span>
-
-            <strong>
+        <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 999px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); margin-bottom: 20px;">
+            <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block; box-shadow: 0 0 8px #10b981;"></span>
+            <strong style="color: #10b981; font-size: 0.9rem; font-family: 'Outfit', sans-serif; letter-spacing: 0.5px; text-transform: uppercase;">
                 Escudo Perimetral Activo
             </strong>
-
         </div>
 
-        <br><br>
-
-        <p
-            style="
-                color:var(--muted);
-            "
-        >
-            Cuenta protegida:
-        </p>
-
-        <h3
-            id="tg-account"
-            style="
-                margin-top:10px;
-            "
-        >
-            Cargando...
-        </h3>
-
-    </section>
-
-    <!-- MÉTRICAS -->
-
-    <section
-        class="card-grid"
-        style="
-            grid-template-columns:
-            repeat(
-                auto-fit,
-                minmax(280px,1fr)
-            );
-        "
-    >
-
-        <div class="card">
-
-            <h3>
-                🔗 Links Analizados
-            </h3>
-
-            <br>
-
-            <div
-                id="stat-links"
-                style="
-                    font-size:3rem;
-                    font-weight:800;
-                    color:var(--primary);
-                "
-            >
-                0
-            </div>
-
-            <p
-                style="
-                    color:var(--muted);
-                "
-            >
-                Verificados por IA
-            </p>
-
-        </div>
-
-        <div class="card">
-
-            <h3>
-                📁 Archivos Protegidos
-            </h3>
-
-            <br>
-
-            <div
-                id="stat-files"
-                style="
-                    font-size:3rem;
-                    font-weight:800;
-                    color:var(--success);
-                "
-            >
-                0
-            </div>
-
-            <p
-                style="
-                    color:var(--muted);
-                "
-            >
-                Analizados por StackPP
-            </p>
-
+        <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 8px;">Cuenta vinculada de Telegram:</p>
+        <h3 id="tg-account" style="font-size: 1.8rem; font-weight: 700; color: var(--text-white);">Cargando...</h3>
+        
+        <div style="margin-top: 15px; font-size: 0.85rem; color: var(--muted);">
+            Estado de conexión API: <span id="api-status" style="font-weight: 700; color: var(--warning);">Comprobando...</span>
         </div>
 
     </section>
 
-    <!-- RESUMEN -->
+    <!-- MÉTRICAS DE TRÁFICO -->
+    <section class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-bottom: 30px;">
+        
+        <div class="card" style="padding: 25px;">
+            <h3 style="font-size: 1.15rem;">🔗 Enlaces Analizados</h3>
+            <br>
+            <div id="stat-links" style="font-size: 3.5rem; font-weight: 800; color: var(--primary); text-shadow: 0 0 20px rgba(99, 102, 241, 0.25);">0</div>
+            <p style="color: var(--muted); font-size: 0.88rem;">Mensajes verificados por la IA</p>
+        </div>
 
-    <section
-        class="card"
-        style="
-            margin-top:30px;
-        "
-    >
+        <div class="card" style="padding: 25px;">
+            <h3 style="font-size: 1.15rem;">📁 Archivos Protegidos</h3>
+            <br>
+            <div id="stat-files" style="font-size: 3.5rem; font-weight: 800; color: var(--success); text-shadow: 0 0 20px rgba(16, 185, 129, 0.25);">0</div>
+            <p style="color: var(--muted); font-size: 0.88rem;">Documentos auditados por ClamAV</p>
+        </div>
 
-        <h3>
-            Resumen Operativo
-        </h3>
+    </section>
 
-        <br>
-
-        <p
-            style="
-                color:var(--muted);
-                line-height:1.8;
-            "
-        >
-
-            • Análisis automático de enlaces.
-
-            <br><br>
-
-            • Detección de phishing mediante IA.
-
-            <br><br>
-
-            • Verificación de reputación URL.
-
-            <br><br>
-
-            • Bloqueo preventivo de archivos peligrosos.
-
-            <br><br>
-
-            • Supervisión continua de Telegram.
-
-        </p>
-
+    <!-- DETALLES DE OPERACIÓN -->
+    <section class="card" style="padding: 30px;">
+        <h3 style="margin-bottom: 15px;">🔍 Resumen Operativo del Sistema</h3>
+        <ul style="color: var(--muted); list-style: none; padding-left: 0; display: grid; gap: 12px; font-size: 0.95rem;">
+            <li style="display: flex; align-items: center; gap: 10px;">
+                <span style="color: var(--accent);">✓</span> Monitoreo en tiempo real de todos los mensajes recibidos.
+            </li>
+            <li style="display: flex; align-items: center; gap: 10px;">
+                <span style="color: var(--accent);">✓</span> Detección semántica de phishing e ingeniería social.
+            </li>
+            <li style="display: flex; align-items: center; gap: 10px;">
+                <span style="color: var(--accent);">✓</span> Escaneo antivirus de archivos adjuntos (límite 20 MB).
+            </li>
+            <li style="display: flex; align-items: center; gap: 10px;">
+                <span style="color: var(--accent);">✓</span> Eliminación preventiva automática de mensajes peligrosos.
+            </li>
+        </ul>
     </section>
 
     <!-- FOOTER -->
-
     <footer class="footer">
-
-        Usuario:
-
-        <span id="meta-user">
-            -
-        </span>
-
-        <br><br>
-
-        StackPP Security Gateway
-
+        <div>Sesión iniciada: <span id="meta-user" style="color: var(--text-white); font-weight: 600;">-</span></div>
+        <div style="margin-top: 10px;">StackPP Security Gateway · Protección Perimetral</div>
     </footer>
 
 </div>
 
-<script>
-
-    const email =
-        localStorage.getItem(
-            'user_email'
-        );
-
-    if (!email) {
-
-        window.location.replace(
-            'index.html'
-        );
-
-    }
-
-    document.getElementById(
-        'meta-user'
-    ).innerText = email;
-
-    document.getElementById(
-        'welcome-title'
-    ).innerText =
-    `Bienvenido ${localStorage.getItem('user_realname') || ''}`;
-
-    document.getElementById(
-        'tg-account'
-    ).innerText =
-    localStorage.getItem('tg_user') ||
-    'Sincronizada';
-
-    async function consultarMetricas() {
-
-        try {
-
-            const res =
-                await fetch(
-                    `${window.location.origin}/api/metricas?email=${encodeURIComponent(email)}`
-                );
-
-            if (!res.ok) {
-
-                throw new Error(
-                    'API Error'
-                );
-
-            }
-
-            const data =
-                await res.json();
-
-            if (
-                data.status === 'ok'
-            ) {
-
-                document.getElementById(
-                    'stat-links'
-                ).textContent =
-                data.links_procesados || 0;
-
-                document.getElementById(
-                    'stat-files'
-                ).textContent =
-                data.archivos_procesados || 0;
-
-            }
-
-        } catch (error) {
-
-            console.error(
-                error
-            );
-
-        }
-
-    }
-
-    function logout() {
-
-        localStorage.removeItem(
-            'user_email'
-        );
-
-        localStorage.removeItem(
-            'user_realname'
-        );
-
-        localStorage.removeItem(
-            'tg_user'
-        );
-
-        window.location.replace(
-            'index.html'
-        );
-
-    }
-
-    consultarMetricas();
-
-    const metricsInterval =
-        setInterval(
-            consultarMetricas,
-            15000
-        );
-
-    window.addEventListener(
-        'beforeunload',
-        () =>
-            clearInterval(
-                metricsInterval
-            )
-    );
-
-</script>
-```
+<script src="js/dashboard.js"></script>
 
 </body>
 </html>
