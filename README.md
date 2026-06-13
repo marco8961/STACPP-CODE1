@@ -38,33 +38,37 @@ STACPP-CODE/
 │   └── webs/stacpp/static/    # Archivos estáticos HTML/CSS servidos por Nginx
 ├── .env                       # Archivo de configuración local (ignorado en producción)
 └── docker-compose.yml         # Orquestador maestro compatible con AWS Multi-AZ
+```
+
 🚀 Requisitos Previos para el Despliegue
 💡 NOTA: Se recomienda revisar detalladamente la sección de 📚 Documentación y Manuales a Seguir. En caso de realizar un despliegue en un entorno local, asegúrese de modificar las variables y rutas según corresponda.
 
 Antes de levantar el entorno en la instancia AWS EC2, asegúrese de contar con la siguiente infraestructura ya aprovisionada en tu consola de AWS:
 
-AWS RDS (PostgreSQL): Instancia activa con una base de datos operativa.
-
-AWS EFS (Elastic File System): Sistema de archivos creado y accesible mediante Mount Targets en las mismas subredes que la EC2.
-
-AWS ALB (Application Load Balancer): Configurado para redirigir el tráfico HTTP de los dominios hacia el puerto 80 de tu instancia EC2.
-
-DOMINIO: Tener un dominio activo de un proveedor de confianza, el cual debe contar con compatibilidad para ser administrado a través de Cloudflare.
+```text
+1. 📦 Docker & Docker Compose v2: Deben estar instalados y activos en el sistema operativo del servidor. Toda la arquitectura se ejecuta en contenedores, por lo que el comando docker compose es indispensable para encender el entorno.
+3. AWS RDS (PostgreSQL): Instancia activa con una base de datos operativa.
+4. AWS EFS (Elastic File System): Sistema de archivos creado y accesible mediante Mount Targets en las mismas subredes que la EC2.
+5. AWS ALB (Application Load Balancer): Configurado para redirigir el tráfico HTTP de los dominios hacia el puerto 80 de tu instancia EC2.
+6. DOMINIO: Tener un dominio activo de un proveedor de confianza, el cual debe contar con compatibilidad para ser administrado a través de Cloudflare.
+```
 
 🛠️ Guía de Despliegue Rápido (Paso a Paso)
 1. Clonar el repositorio en la instancia EC2
-Bash
+```Bash
 git clone [https://github.com/marco8961/STACPP-CODE1.git](https://github.com/marco8961/STACPP-CODE1.git)
 cd STACPP-CODE1
-2. Configurar Variables de Entorno
+```
+3. Configurar Variables de Entorno
 Crea un archivo .env en la raíz basado en las variables del proyecto:
 
-Bash
+```Bash
 touch .env
 nano .env
+```
 Variables a copiar y rellenar dentro del archivo:
 
-Ini, TOML
+```bash
 # ==============================================================================
 # 🔐 CONFIGURACIÓN DE TELEGRAM (01-gestor-mensajes)
 # ==============================================================================
@@ -115,12 +119,15 @@ DOMAIN_NAME=tu_dominio.com
 # 📦 CONFIGURACIÓN DE ALMACENAMIENTO AWS EFS
 # ==============================================================================
 EFS_VOLUME_ID=fs......
+```
 3. Ejecutar las Tablas Estructurales en la Base de Datos
 Antes de encender los contenedores, ejecute el archivo SQL de su dump estructural utilizando su cliente de confianza (DBeaver o pgAdmin) conectado al endpoint de AWS RDS.
 
 4. Encender la Arquitectura con Docker Compose
-Bash
+
+```Bash
 docker compose up -d
+```
 💾 Gestión de Almacenamiento Compartido (AWS EFS)
 El volumen de datos de n8n y la carpeta compartida con el microservicio 01-gestor-mensajes están mapeados directamente a la raíz de tu AWS EFS usando el controlador nativo NFSv4 de Docker. Esto garantiza que si la instancia EC2 se reinicia o escala, los archivos .png y los flujos nunca se perderán.
 
